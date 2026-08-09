@@ -6,13 +6,19 @@ This baseline investigates **synthetic-to-real domain adaptation for semantic se
 
 The model is trained on two domains:
 
-* **GTA5** — Synthetic source domain with pixel-level segmentation annotations.
-* **Cityscapes** — Real target domain.
+* **GTA5 (GTA5 Segmentation Dataset)** — Synthetic source domain with pixel-level segmentation annotations.
+* **Cityscapes (Cityscapes Dataset)** — Real-world target domain.
+
+The GTA5 dataset used in this experiment is the publicly available **GTA5 Segmentation dataset from Kaggle**:
+https://www.kaggle.com/datasets/gurazeez/gta5-segmentation
+
+The Cityscapes dataset used in this experiment is the publicly available dataset from Kaggle:
+https://www.kaggle.com/datasets/shuvoalok/cityscapes
 
 The main idea is to train the U-Net with two objectives:
 
-1. Learn accurate semantic segmentation using the labeled GTA5 dataset.
-2. Learn domain-invariant segmentation representations through adversarial training.
+1. Learn accurate semantic segmentation using labeled synthetic data (GTA5).
+2. Learn domain-invariant segmentation representations through adversarial training against real-world data (Cityscapes).
 
 A CNN-based discriminator is introduced to distinguish between segmentation maps generated from the two domains.
 
@@ -22,39 +28,38 @@ A CNN-based discriminator is introduced to distinguish between segmentation maps
 
 Semantic segmentation models trained on synthetic datasets often suffer from a significant **domain gap** when applied to real-world images.
 
-Although GTA5 provides large amounts of automatically generated pixel-level annotations, its visual and semantic distribution differs from real-world datasets such as Cityscapes.
+Although the GTA5 Segmentation dataset provides large-scale automatically generated pixel-level annotations, its visual and semantic distribution differs from real-world datasets such as Cityscapes.
 
 The goal of this baseline is therefore:
 
-> Train a segmentation model using labeled synthetic data while adapting its predictions toward the real target domain.
+> Train a segmentation model using labeled synthetic data (GTA5) while adapting its predictions toward the real target domain (Cityscapes).
 
 The adaptation can be summarized as:
 
 ```text
-Synthetic Domain                         Real Domain
-     GTA5                                  Cityscapes
-       │                                       │
-       ▼                                       ▼
+Synthetic Domain (GTA5)                 Real Domain (Cityscapes)
+        │                                       │
+        ▼                                       ▼
    Input Image                             Input Image
-       │                                       │
-       └──────────────┐       ┌────────────────┘
-                      ▼       ▼
-                    ┌──────────┐
-                    │  U-Net   │
-                    │Generator │
-                    └────┬─────┘
-                         │
-                         ▼
-                 Segmentation Maps
-                         │
-                         ▼
-                ┌─────────────────┐
-                │ Discriminator D │
-                │      CNN        │
-                └────────┬────────┘
-                         │
-                         ▼
-                    Domain Label
+        │                                       │
+        └──────────────┐       ┌────────────────┘
+                       ▼       ▼
+                     ┌──────────┐
+                     │  U-Net   │
+                     │Generator │
+                     └────┬─────┘
+                          │
+                          ▼
+                  Segmentation Maps
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │ Discriminator D │
+                 │      CNN        │
+                 └────────┬────────┘
+                          │
+                          ▼
+                     Domain Label
 ```
 
 ---
@@ -95,7 +100,7 @@ For an image of spatial size `H × W` and `C` semantic classes, the generator pr
 G(x) → [C, H, W]
 ```
 
-where each pixel contains a prediction over the semantic classes.
+where each pixel contains a probability distribution over semantic classes.
 
 ---
 
@@ -118,17 +123,20 @@ Segmentation Map
    Domain Prediction
 ```
 
-The discriminator learns to distinguish between segmentation predictions originating from the source and target domains.
+The discriminator learns to distinguish between segmentation predictions originating from:
+
+* GTA5 (synthetic source domain)
+* Cityscapes (real target domain)
 
 Conceptually:
 
 ```text
-GTA5 → U-Net → Source Segmentation → Discriminator → Source / Fake
+GTA5 → U-Net → Source Segmentation → Discriminator → Source
 
-Cityscapes → U-Net → Target Segmentation → Discriminator → Target / Real
+Cityscapes → U-Net → Target Segmentation → Discriminator → Target
 ```
 
-The discriminator therefore learns the difference between the segmentation-map distributions of the two domains.
+The discriminator therefore learns the difference between the segmentation-map distributions of synthetic and real domains.
 
 ---
 
@@ -136,9 +144,9 @@ The discriminator therefore learns the difference between the segmentation-map d
 
 The training process combines **supervised segmentation learning** with **adversarial domain adaptation**.
 
-### 1. Segmentation Loss
+### 1. Segmentation Loss (Supervised on GTA5)
 
-Since GTA5 provides ground-truth segmentation masks, the generator is trained using a supervised segmentation loss.
+Since the GTA5 Segmentation dataset provides ground-truth masks, the generator is trained using supervised learning.
 
 For a source image `x_s` and its ground-truth mask `y_s`:
 
@@ -146,15 +154,15 @@ For a source image `x_s` and its ground-truth mask `y_s`:
 x_s → U-Net → ŷ_s
 ```
 
-The segmentation loss can be expressed as:
+The segmentation loss is:
 
 ```text
 L_seg = CE(G(x_s), y_s)
 ```
 
-where `CE` represents the pixel-wise cross-entropy loss.
+where `CE` is pixel-wise cross-entropy loss.
 
-This loss ensures that the generator learns the actual semantic segmentation task.
+This ensures that the model learns correct semantic segmentation on the synthetic domain.
 
 ---
 
@@ -162,11 +170,9 @@ This loss ensures that the generator learns the actual semantic segmentation tas
 
 The discriminator receives segmentation predictions and learns to distinguish their domain.
 
-The generator, on the other hand, tries to make the source-domain predictions appear similar to the target-domain predictions from the discriminator's perspective.
+The generator is trained to fool the discriminator, encouraging **domain-invariant segmentation outputs**.
 
-Therefore, adversarial learning encourages the generator to produce **domain-invariant segmentation predictions**.
-
-The generator objective can be represented conceptually as:
+The overall generator objective is:
 
 ```text
 L_G = L_seg + λ_adv L_adv
@@ -174,15 +180,15 @@ L_G = L_seg + λ_adv L_adv
 
 where:
 
-* `L_seg` — supervised segmentation loss.
-* `L_adv` — adversarial domain adaptation loss.
-* `λ_adv` — weight controlling the contribution of adversarial learning.
+* `L_seg` — supervised segmentation loss on GTA5
+* `L_adv` — adversarial loss for domain alignment
+* `λ_adv` — weighting factor for adversarial contribution
 
 ---
 
 ## Training Pipeline
 
-### Source Domain
+### Source Domain (GTA5)
 
 ```text
 GTA5 Image
@@ -196,7 +202,7 @@ Source Segmentation Prediction
     ├──────────────► Segmentation Loss
     │                      ▲
     │                      │
-    │                  Ground Truth
+    │              Ground Truth (GTA5)
     │
     ▼
 Discriminator
@@ -205,7 +211,7 @@ Discriminator
 Domain Prediction
 ```
 
-### Target Domain
+### Target Domain (Cityscapes)
 
 ```text
 Cityscapes Image
@@ -223,17 +229,17 @@ Discriminator
 Domain Prediction
 ```
 
-During training, GTA5 provides the semantic supervision, while Cityscapes contributes target-domain information for adversarial adaptation.
+Cityscapes images are used without labels during training and only contribute to adversarial alignment.
 
 ---
 
 ## Why Use Segmentation Maps for the Discriminator?
 
-Instead of discriminating between RGB images, the discriminator operates on the output of the segmentation network.
+Instead of operating on RGB images, the discriminator operates on segmentation outputs.
 
-This focuses the adversarial learning process on the **semantic structure** of the predictions.
+This shifts the adversarial objective from appearance-level alignment to **semantic-level alignment**.
 
-The objective is not simply:
+The goal is not:
 
 ```text
 Synthetic image ≠ Real image
@@ -242,107 +248,102 @@ Synthetic image ≠ Real image
 but rather:
 
 ```text
-Synthetic-domain segmentation
+Synthetic segmentation distribution
         ↓
-make its distribution
+align with
         ↓
-closer to
-        ↓
-Real-domain segmentation
+Real segmentation distribution
 ```
 
-This encourages the generator to learn segmentation representations that are less sensitive to the source-target domain gap.
+This encourages the generator to produce predictions that are structurally consistent across domains.
 
 ---
 
 ## Datasets
 
-### GTA5
+### GTA5 Segmentation Dataset (Kaggle)
 
-GTA5 is used as the **synthetic source domain**.
+* Source: https://www.kaggle.com/datasets/gurazeez/gta5-segmentation
+* Synthetic urban driving scenes
+* Provides:
 
-Each training example contains:
+  * RGB images
+  * Pixel-level semantic segmentation masks
+* Used for supervised training of the segmentation model
 
-```text
-RGB Image
-     +
-Pixel-level Segmentation Mask
-```
+### Cityscapes Dataset (Kaggle)
 
-The ground-truth annotations provide the supervision required for the segmentation loss.
-
-### Cityscapes
-
-Cityscapes is used as the **real target domain**.
-
-During adversarial adaptation, the RGB images are used to expose the generator and discriminator to the target-domain distribution.
-
-The target annotations are not required for the adversarial training objective and can instead be reserved for evaluation.
+* Source: https://www.kaggle.com/datasets/shuvoalok/cityscapes
+* Real-world urban street scenes
+* Used as target domain for adversarial adaptation
+* Labels are not used during training (only for evaluation)
 
 ---
 
 ## Baseline Goal
 
-The purpose of this baseline is to establish a strong CNN-based reference model using U-Net.
+This baseline establishes a strong CNN-based reference model using U-Net.
 
-The experiment evaluates whether adversarial learning can improve the transfer of a segmentation model from:
+The experiment evaluates whether adversarial learning improves transfer from:
 
 ```text
-GTA5
-Synthetic Domain
-      ↓
-      ↓ Domain Adaptation
-      ↓
-Cityscapes
-Real Domain
+GTA5 (Synthetic Domain)
+        ↓
+   Domain Adaptation
+        ↓
+Cityscapes (Real Domain)
 ```
 
 ---
 
 ## Evaluation
 
-The primary evaluation should focus on semantic segmentation performance on the target domain.
+The primary evaluation is performed on the Cityscapes target domain.
 
-Recommended metrics include:
+Recommended metrics:
 
-* **Mean Intersection over Union (mIoU)**
-* **Pixel Accuracy**
-* **Per-class IoU**
-* **Mean Pixel Accuracy**
+* **Mean Intersection over Union (mIoU)** (primary metric)
+* Pixel Accuracy
+* Per-class IoU
+* Mean Pixel Accuracy
 
-The most important metric for comparing the three baselines is **mIoU on Cityscapes**.
+The most important comparison metric across all baselines is:
+
+> **mIoU on Cityscapes**
 
 ---
 
 ## Expected Comparison
 
-This baseline will serve as the first reference point for the following architectures:
+This baseline serves as the reference point for the following architectures:
 
 ```text
-Baseline 1
-U-Net
+Baseline 1 — U-Net
    ↓
 Adversarial Adaptation
    ↓
-Cityscapes
+Cityscapes mIoU
 
 
-Baseline 2
-DeepLabV3+
+Baseline 2 — DeepLabV3+
    ↓
 Adversarial Adaptation
    ↓
-Cityscapes
+Cityscapes mIoU
 
 
-Baseline 3
-Transformer-based Segmentation
+Baseline 3 — Transformer-based Segmentation
    ↓
 Adversarial Adaptation
    ↓
-Cityscapes
+Cityscapes mIoU
 ```
 
-The discriminator, domain-adaptation strategy, datasets, and evaluation protocol should remain as consistent as possible across all baselines.
+All baselines share the same:
 
-This allows the experiment to investigate how the **choice of segmentation architecture** affects synthetic-to-real domain adaptation.
+* Discriminator design
+* Training strategy
+* Datasets (GTA5 + Cityscapes)
+* Evaluation protocol
+
+This ensures a fair comparison of how the **segmentation architecture choice** affects synthetic-to-real domain adaptation performance.

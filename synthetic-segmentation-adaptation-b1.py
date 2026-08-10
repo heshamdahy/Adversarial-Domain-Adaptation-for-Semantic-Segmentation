@@ -1,7 +1,4 @@
-# Generated from: synthetic-segmentation-adaptation-b1.ipynb
-# Converted at: 2026-08-10T11:14:13.689Z
-# Next step (optional): refactor into modules & generate tests with RunCell
-# Quick start: pip install runcell
+
 
 import torch
 import torch.nn as nn
@@ -11,6 +8,7 @@ from torchvision import transforms
 import numpy as np
 from PIL import Image
 import os
+
 
 
 

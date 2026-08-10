@@ -246,7 +246,7 @@ class Generator_Unet(nn.Module):
         s3=self.upsample4(s3)
         s4=self.conv_block4(torch.cat([s3,o1],dim=1))
 
-        output=self.upsample5(s4) # B * 1 * 256 * 256 
+        output=self.upsample5(s4) # B * 19 * 256 * 256 
     
 
         return output

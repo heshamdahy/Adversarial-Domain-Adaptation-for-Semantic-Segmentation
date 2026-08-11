@@ -347,7 +347,7 @@ def train_model(epochs,start_epoch=0):
 
         print(f'epoch :{epoch} ---> generator loss : {generator_total_loss/len(train_dataloader)} ---> discriminator loss :{discriminator_total_loss/len(train_dataloader)}')
         if (epoch+1)%10==0:
-            torch.save({'epoch':epoch+1 , 'generator_state_dict':generator_model.state_dict(),'discriminator_state_dict':disriminator_model.state_dict(),'generator_optimizer':generator_optimizer.state_dict(),'discriminator_optimizer':discriminator_optimizer.state_dict()},f'checkpoint_{epoch+1}.pth')
+            torch.save({'epoch':epoch+1 , 'generator_state_dict':generator_model.state_dict(),'discriminator_state_dict':discriminator_model.state_dict(),'generator_optimizer':generator_optimizer.state_dict(),'discriminator_optimizer':discriminator_optimizer.state_dict()},f'checkpoint_{epoch+1}.pth')
     return generator_model , discriminator_model
 
 

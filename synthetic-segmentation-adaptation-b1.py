@@ -132,7 +132,7 @@ device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 dataset=train_data(train_data_gta5,cityscape_train,transforms)
 
-train_dataloader=DataLoader(dataset,32,shuffle=True)
+train_dataloader=DataLoader(dataset,4,shuffle=True)
 
 class Encoder(nn.Module):
     def __init__(self,in_channel=3,out_channel=32,kernel_size=3,max_pool=2):
@@ -332,20 +332,20 @@ def train_model(epochs,start_epoch=0):
 
             discriminator_optimizer.zero_grad()
             cityscape_pred=discriminator_model(cityscape_seg.detach())
-            gta5_pred=discriminator_model(gta5_image.detach())
+            gta5_pred=discriminator_model(gta5_seg.detach())
             disc_loss=discriminator_loss(gta5_pred,cityscape_pred)
             discriminator_total_loss+=disc_loss.item()
             disc_loss.backward()
             discriminator_optimizer.step()
             
-            generator_optmizier.zero_grad()
+            generator_optimizer.zero_grad()
             cityscape_pred_gene=discriminator_model(cityscape_seg)
             gene_loss=generator_loss(gta5_seg,gta5_mask,cityscape_pred_gene)
             generator_total_loss+=gene_loss.item()
             gene_loss.backward()
             generator_optimizer.step()
 
-        print(f'epoch :{epoch} ---> generator loss : {generator_total_loss/len(train_datakoader)} ---> discriminator loss :{discriminator_total_loss/len(train_datakoader)}')
+        print(f'epoch :{epoch} ---> generator loss : {generator_total_loss/len(train_dataloader)} ---> discriminator loss :{discriminator_total_loss/len(train_dataloader)}')
         if (epoch+1)%10==0:
             torch.save({'epoch':epoch+1 , 'generator_state_dict':generator_model.state_dict(),'discriminator_state_dict':disriminator_model.state_dict(),'generator_optimizer':generator_optimizer.state_dict(),'discriminator_optimizer':discriminator_optimizer.state_dict()},f'checkpoint_{epoch+1}.pth')
     return generator_model , discriminator_model

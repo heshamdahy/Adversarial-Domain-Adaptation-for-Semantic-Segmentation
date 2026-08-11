@@ -298,7 +298,7 @@ def generator_loss(gta5_seg,gta5_mask,cityscape_disc_pred):
     global criterion_seg , criterion_adv
     
     seg_loss=criterion_seg(gta5_seg,gta5_mask)
-    adv_loss=criterion_adv(cityscape_disc_pred,torch.zeros_like(gta5_disc_pred))
+    adv_loss=criterion_adv(cityscape_disc_pred,torch.zeros_like(cityscape_disc_pred))
 
     return seg_loss + adv_loss 
 

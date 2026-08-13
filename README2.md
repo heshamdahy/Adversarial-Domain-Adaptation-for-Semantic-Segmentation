@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="Adversarial-Domain-Adaptation-for-Semantic-Segmentation
-/deeplab.png" alt="DeepLabV3+ Architecture"/>
+/deeplap.png" alt="DeepLabV3+ Architecture"/>
 </p>
 ## Overview
 

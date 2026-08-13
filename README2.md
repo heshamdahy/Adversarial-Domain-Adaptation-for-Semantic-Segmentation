@@ -1,7 +1,7 @@
 # Baseline 2 — DeepLabV3+ for Synthetic-to-Real Semantic Segmentation
 
 <p align="center">
-  <img src="deeplab.png" alt="DeepLabV3+ Architecture" width="900"/>
+  <img src="deeplab.png" alt="DeepLabV3+ Architecture" width="300"/>
 </p>
 ## Overview
 

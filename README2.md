@@ -1,5 +1,8 @@
 # Baseline 2 — DeepLabV3+ for Synthetic-to-Real Semantic Segmentation
 
+<p align="center">
+  <img src="deeplab.png" alt="DeepLabV3+ Architecture" width="900"/>
+</p>
 ## Overview
 
 This repository presents the **second baseline** of a Synthetic-to-Real Semantic Segmentation project. The objective is to investigate whether a stronger segmentation architecture can improve the transfer of semantic segmentation knowledge from a synthetic environment to real-world urban scenes.

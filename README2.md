@@ -1,7 +1,8 @@
 # Baseline 2 — DeepLabV3+ for Synthetic-to-Real Semantic Segmentation
 
 <p align="center">
-  <img src="deeplab.png" alt="DeepLabV3+ Architecture"/>
+  <img src="Adversarial-Domain-Adaptation-for-Semantic-Segmentation
+/deeplab.png" alt="DeepLabV3+ Architecture"/>
 </p>
 ## Overview
 

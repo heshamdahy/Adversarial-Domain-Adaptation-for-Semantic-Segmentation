@@ -1,5 +1,7 @@
 # Baseline 1 — U-Net Adversarial Domain Adaptation
-
+<p align="center">
+  <img src="u-net.png" alt="DeepLabV3+ Architecture"/>
+</p>
 ## Overview
 
 This baseline investigates **synthetic-to-real domain adaptation for semantic segmentation** using a U-Net as the segmentation generator.

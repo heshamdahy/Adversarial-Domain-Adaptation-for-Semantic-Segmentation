@@ -338,11 +338,7 @@ Adversarial Adaptation
 Cityscapes mIoU
 
 
-Baseline 3 — Transformer-based Segmentation
-   ↓
-Adversarial Adaptation
-   ↓
-Cityscapes mIoU
+
 ```
 
 All baselines share the same:
